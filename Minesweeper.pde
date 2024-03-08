@@ -1,6 +1,8 @@
 import de.bezier.guido.*;
-public final static int NUM_ROWS =20;
-public final static int NUM_COLS =20;
+public final static int NUM_ROWS =10;
+public final static int NUM_COLS =10;
+public boolean play=true;
+public int score=0;
 private MSButton[][] buttons; //2d array of minesweeper buttons
 private ArrayList <MSButton> mines=new ArrayList <MSButton> (); //ArrayList of just the minesweeper buttons that are mined
 
@@ -22,7 +24,7 @@ buttons [i][u]=new MSButton(i,u);
 }
 public void setMines()
 {
-  while (mines.size()<20){
+  while (mines.size()<NUM_ROWS*NUM_COLS/9){
 int r=(int)(Math.random()*(NUM_ROWS));
 int c=(int)(Math.random()*(NUM_COLS));
 if(!mines.contains(this)){
@@ -40,29 +42,39 @@ public void draw ()
 }
 public boolean isWon()
 {
-    //your code here
+ for (int i=0;i<NUM_ROWS;i++)
+    for (int u=0;u<NUM_COLS;u++)
+    if (!buttons[i][u].isMined()&&!buttons[i][u].isClicked())
     return false;
+    return true;
 }
 public void displayLosingMessage()
 {
     //your code here
+    for (int i=0;i<NUM_ROWS;i++)
+    for (int u=0;u<NUM_COLS;u++)
+    buttons[i][u].setLabel("X");
+    //fill(100,255,255);
+    //rect(0,0,width,height);
 }
 public void displayWinningMessage()
 {
+   for (int i=0;i<NUM_ROWS;i++)
+    for (int u=0;u<NUM_COLS;u++)
+    buttons[i][u].setLabel("√");
     //your code here
 }
 public boolean isValid(int r, int c)
 {
     //your code here
-    
-    return false;
+    return r>=0&&r<NUM_ROWS&&c>=0&&c<NUM_COLS;
 }
 public int countMines(int row, int col)
 {
     int numMines = 0;
 for (int u=-1;u<=1;u++)
   for (int i=-1;i<=1;i++)
-  if(col-i>=0&&col-i<NUM_ROWS&&row-u>=0&&row-u<NUM_COLS&&(i!=0||u!=0))
+  if(isValid(row-u,col-i)&&(i!=0||u!=0))
   if (buttons[row-u][col-i].isMined()==true){
   numMines++;}
   return numMines;
@@ -90,44 +102,48 @@ public class MSButton
     // called by manager
     public void mousePressed () 
     {
-        clicked = true;
+              int count=countMines(myRow,myCol);
         //your code here
-        if(countMines(myRow,myCol)==0){
-          System.out.println(countMines(myRow,myCol));
-//          for (int i=-1;i<1;i++)
-//          for (int u=-1;u<1;u++)
-//          if (myCol-u>=0&&myCol-u<NUM_ROWS&&myRow-i>=0&&myRow-i<NUM_COLS){
-//buttons[myRow-i][myCol-u].mousePressed();
-//        System.out.println((myCol-u)+", "+(myRow-i));  
-//        }
+        if(play||!isWon()){
+          if(mouseButton == LEFT){
+            flagged=false;
+                    clicked = true;
 
+        if (isMined()){
+        play=false;
+      }
+        else if(count==0){
+for (int u=-1; u<=1; u++) {
+        for (int i=-1; i<=1; i++) {
+          if (isValid(myRow-u,myCol-i)&&buttons[myRow-u][myCol-i].isClicked()==false) {
+          //  System.out.println((myCol-i)+", "+(myRow-u));
+            buttons[myRow-u][myCol-i].mousePressed();
 
-
-//for (int u=-1; u<=1; u++) 
-//        for (int i=-1; i<=1; i++) 
-//          if (myCol-i>=0&&myCol-i<NUM_ROWS&&myRow-u>=0&&myRow-u<NUM_COLS&&(i!=0||u!=0)) {
-//            System.out.println((myRow-u)+", "+(myCol-i));
-            buttons[myRow][myCol-1].mousePressed();  
-                        buttons[myRow-1][myCol-1].mousePressed();        
-            buttons[myRow][myCol+1].mousePressed();        
-            buttons[myRow-1][myCol].mousePressed();        
-            buttons[myRow+1][myCol].mousePressed();        
-            //buttons[myRow-1][myCol-1].mousePressed();        
-            //buttons[myRow-1][myCol-1].mousePressed();        
-            //buttons[myRow-1][myCol-1].mousePressed();        
-
-      //}
-
+      }
+        }
 
 
     }
+        }
+        
+        else if(count>0)
+    setLabel(count);
+        }else
+        flagged=!flagged;
+        }
+   // System.out.println("HELP");
     }
     public void draw () 
     {    
-        if (flagged)
-            fill(0);
-         else if(  mines.contains(this) ) {
+      if(isWon()){
+      System.out.print("help");
+displayWinningMessage();
+      } if (flagged&&!clicked&&play&&!isWon())
+            fill(255,255,0);
+         else if( (clicked||!play)&& mines.contains(this) ) {
              fill(255,0,0);
+                   displayLosingMessage();  
+
             // System.out.println(buttons[myRow][myCol].isMined());
     }else if(clicked)
             fill( 200 );
@@ -150,9 +166,11 @@ public class MSButton
     {
         return flagged;
     }
+     public boolean isClicked(){
+          return clicked;
+        }
         public boolean isMined(){
         return mines.contains(this);
         }
 
 }
-
