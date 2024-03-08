@@ -136,7 +136,7 @@ for (int u=-1; u<=1; u++) {
     public void draw () 
     {    
       if(isWon()){
-      System.out.print("help");
+    //  System.out.print("help");
 displayWinningMessage();
       } if (flagged&&!clicked&&play&&!isWon())
             fill(255,255,0);
